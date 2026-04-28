@@ -14,31 +14,58 @@ import getFilesServiceOverride from '@codingame/monaco-vscode-files-service-over
 import getLanguageServiceOverride from '@codingame/monaco-vscode-languages-service-override';
 import getMonarchServiceOverride from '@codingame/monaco-vscode-monarch-service-override';
 import { MonacoVscodeApiWrapper } from 'monaco-languageclient/vscodeApiWrapper';
-import {
-  Worker,
-  defineDefaultWorkerLoaders,
-  useWorkerFactory as configureUseWorkerFactory,
-} from 'monaco-languageclient/workerFactory';
 
-const originalGetWorkerUrl = MonacoEnvironment?.getWorkerUrl;
+type WorkerSpec = { url: URL; options: WorkerOptions };
+type WorkerSpecLoader = () => WorkerSpec;
+
+const workerSpecs: Partial<Record<string, WorkerSpecLoader>> = {
+  editorWorkerService: () => ({
+    url: new URL(
+      '@codingame/monaco-vscode-editor-api/esm/vs/editor/editor.worker.js',
+      import.meta.url
+    ),
+    options: { type: 'module' },
+  }),
+  extensionHostWorkerMain: () => ({
+    url: new URL(
+      '@codingame/monaco-vscode-api/workers/extensionHost.worker',
+      import.meta.url
+    ),
+    options: { type: 'module' },
+  }),
+  graphql: () => ({
+    url: new URL('monaco-graphql/esm/graphql.worker.js', import.meta.url),
+    options: { type: 'module' },
+  }),
+  json: () => ({
+    url: new URL(
+      '@codingame/monaco-vscode-standalone-json-language-features/language/json/json.worker.js',
+      import.meta.url
+    ),
+    options: { type: 'module' },
+  }),
+};
+
+globalThis.MonacoEnvironment = {
+  getWorker(_moduleId, label) {
+    const spec = workerSpecs[label]?.();
+    return spec ? new Worker(spec.url, spec.options) : undefined!;
+  },
+  getWorkerUrl(_moduleId, label) {
+    return workerSpecs[label]?.().url.toString() as string;
+  },
+  getWorkerOptions(_moduleId, label) {
+    return workerSpecs[label]?.().options;
+  },
+};
 
 const apiWrapper = new MonacoVscodeApiWrapper({
   $type: 'classic',
   viewsConfig: { $type: 'EditorService' },
-  monacoWorkerFactory: () =>
-    configureUseWorkerFactory({
-      workerLoaders: {
-        ...defineDefaultWorkerLoaders(),
-        graphql: () =>
-          new Worker(originalGetWorkerUrl!('customMonaco', 'graphql')!, {
-            type: 'module',
-          }),
-        json: () =>
-          new Worker(originalGetWorkerUrl!('customMonaco', 'json')!, {
-            type: 'module',
-          }),
-      },
-    }),
+  monacoWorkerFactory: () => {},
+  advanced: {
+    enableExtHostWorker: true,
+  },
   serviceOverrides: {
     ...getBaseServiceOverride(),
     ...getLanguageServiceOverride(),

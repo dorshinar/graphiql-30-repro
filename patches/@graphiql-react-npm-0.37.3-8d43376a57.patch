@@ -1,0 +1,25 @@
+# Monaco changed the way they bundle languages, we we are forced to patch the package to use @codingame/monaco-vscode-standalone-json-language-features.
+# @link https://github.com/CodinGame/monaco-vscode-api/issues/745#issuecomment-3595416623
+# @link https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md#0550
+
+diff --git a/dist/stores/monaco.js b/dist/stores/monaco.js
+index b1a206115f1003731f4ebe34c044aa57e0afae6c..70ac1cb81f45abef8f11bef67eaa0db94c7031f5 100644
+--- a/dist/stores/monaco.js
++++ b/dist/stores/monaco.js
+@@ -1,6 +1,7 @@
+ import { createStore } from "zustand";
+ import { JSON_DIAGNOSTIC_OPTIONS, MONACO_THEME_NAME, MONACO_THEME_DATA, MONACO_GRAPHQL_DIAGNOSTIC_SETTINGS } from "../constants.js";
+ import { createBoundedUseStore } from "../utility/create-bounded-use-store.js";
++import { jsonDefaults } from '@codingame/monaco-vscode-standalone-json-language-features';
+ async function patchFirefox() {
+   const {
+     MouseTargetFactory
+@@ -32,7 +33,7 @@ const monacoStore = createStore((set, get) => ({
+         initializeMode
+       }] = await Promise.all([import("monaco-graphql/esm/monaco-editor.js"), import("monaco-graphql/esm/lite.js")]);
+       globalThis.__MONACO = monaco;
+-      monaco.languages.json.jsonDefaults.setDiagnosticsOptions(JSON_DIAGNOSTIC_OPTIONS);
++      jsonDefaults.setDiagnosticsOptions(JSON_DIAGNOSTIC_OPTIONS);
+       monaco.editor.defineTheme(MONACO_THEME_NAME.dark, MONACO_THEME_DATA.dark);
+       monaco.editor.defineTheme(MONACO_THEME_NAME.light, MONACO_THEME_DATA.light);
+       if (navigator.userAgent.includes("Firefox/")) {

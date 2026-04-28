@@ -9,6 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@graphiql/plugin-doc-explorer": "^0.4.1",
+    "@graphiql/plugin-explorer": "^5.1.1",
+    "@graphiql/plugin-history": "^0.4.1",
+    "@graphiql/react": "^0.37.3",
+    "@graphiql/toolkit": "^0.11.3",
+    "graphiql": "5.2.2",
+    "graphql": "^16.12.0",
     "@codingame/monaco-vscode-api": "30.0.1",
     "@codingame/monaco-vscode-base-service-override": "30.0.1",
     "@codingame/monaco-vscode-editor-api": "30.0.1",
@@ -84,6 +91,10 @@
     "onlyBuiltDependencies": [
       "@swc/core",
       "esbuild"
-    ]
+    ],
+    "patchedDependencies": {
+      "@graphiql/react@0.37.3": "patches/@graphiql-react-npm-0.37.3-8d43376a57.patch",
+      "monaco-graphql@^1.7.3": "patches/monaco-graphql-npm-1.7.3-048eb7e07a.patch"
+    }
   }
 }

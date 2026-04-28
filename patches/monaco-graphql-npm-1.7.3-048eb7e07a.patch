@@ -1,0 +1,27 @@
+# Monaco changed the way they bundle languages, we we are forced to patch the package to use @codingame/monaco-vscode-standalone-json-language-features.
+# @link https://github.com/CodinGame/monaco-vscode-api/issues/745#issuecomment-3595416623
+# @link https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md#0550
+
+diff --git a/esm/languageFeatures.js b/esm/languageFeatures.js
+index e5e219160cca67b24a898fdafd542e9f2ca45682..0bca9263b8ee72e06e6692b219a9e938e09052a3 100644
+--- a/esm/languageFeatures.js
++++ b/esm/languageFeatures.js
+@@ -2,6 +2,7 @@ import { Uri, languages } from './monaco-editor';
+ import { editor } from 'monaco-editor/esm/vs/editor/editor.api';
+ import { CompletionItemKind as lsCompletionItemKind } from 'graphql-language-service';
+ import { getModelLanguageId } from './utils';
++import { jsonDefaults } from '@codingame/monaco-vscode-standalone-json-language-features';
+ export class DiagnosticsAdapter {
+     defaults;
+     _worker;
+@@ -95,8 +96,8 @@ export class DiagnosticsAdapter {
+                 schema: jsonSchema,
+                 fileMatch: variablesUris,
+             };
+-            const currentSchemas = languages.json.jsonDefaults.diagnosticsOptions.schemas?.filter(s => s.uri !== schemaUri) || [];
+-            languages.json.jsonDefaults.setDiagnosticsOptions({
++            const currentSchemas = jsonDefaults.diagnosticsOptions.schemas?.filter(s => s.uri !== schemaUri) || [];
++            jsonDefaults.setDiagnosticsOptions({
+                 schemaValidation: 'error',
+                 validate: true,
+                 ...this.defaults.diagnosticSettings.jsonDiagnosticSettings,

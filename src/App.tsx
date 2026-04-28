@@ -1,45 +1,35 @@
-import { useEffect, useRef } from 'react';
+import { createGraphiQLFetcher } from '@graphiql/toolkit';
+import { useMemo } from 'react';
 
-import { initMonaco, monaco } from './customMonaco';
+import { GraphiQL } from './GraphiQL';
 
-const SAMPLE = `query Example {
-  user(id: "abc") {
-    id
+const DEFAULT_QUERY = `# Try a query against the public Countries API
+query {
+  countries {
+    code
     name
+    capital
   }
-}`;
+}
+`;
 
 export function App() {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    let editor: monaco.editor.IStandaloneCodeEditor | undefined;
-    let cancelled = false;
-
-    initMonaco().then(() => {
-      if (cancelled || !containerRef.current) return;
-      editor = monaco.editor.create(containerRef.current, {
-        value: SAMPLE,
-        language: 'graphql',
-        automaticLayout: true,
-      });
-    });
-
-    return () => {
-      cancelled = true;
-      editor?.dispose();
-    };
-  }, []);
+  const fetcher = useMemo(
+    () => createGraphiQLFetcher({ url: 'https://countries.trevorblades.com/' }),
+    []
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       <header
         style={{ padding: '8px 12px', background: '#1e1e1e', color: '#fff' }}
       >
-        graphiql-30 repro — open DevTools → Network. The editor worker fetch is
-        the bug.
+        graphiql-30 repro — open DevTools → Network. The editor worker fetch
+        is the bug.
       </header>
-      <div ref={containerRef} style={{ flex: 1 }} />
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <GraphiQL fetcher={fetcher} defaultQuery={DEFAULT_QUERY} />
+      </div>
     </div>
   );
 }
